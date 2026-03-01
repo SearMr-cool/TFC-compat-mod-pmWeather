@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "net.searmr.tfccompatpm.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "priority": 2000000000,
+  "mixins": [
+    "ChunkDataMixin",
+    "OverworldClimateModelMixin",
+    "PmweatherThermoMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
