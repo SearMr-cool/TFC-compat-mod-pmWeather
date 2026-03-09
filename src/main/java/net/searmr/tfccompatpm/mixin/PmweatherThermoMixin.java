@@ -191,8 +191,7 @@ public class PmweatherThermoMixin {
                 if (seasonEffect < 0.0F && humidity > 0.75F) {
                     seasonEffect *= 1.0F - (humidity - 0.75F) * 4.0F;
                 }
-
-                sfcDew += seasonEffect * 8.0F;
+                
                 float humidEffect = SeasonHandler.getSeasonEffectSine(weatherHandler.getWorld(), 3.5F) + 1.0F;
                 if (humidity > 0.75F) {
                     humidEffect *= 1.0F - (humidity - 0.75F) * 4.0F;
