@@ -24,7 +24,7 @@ public class OverworldClimateModelMixin {
 
 
 
-    @Inject(method = "getInstantRainfall", at = @At("HEAD"),cancellable = true)
+    @Inject(method = "getInstantRainfall", at = @At("HEAD"),cancellable = true,remap = false)
     private void getInstantRainFallO(LevelReader level, BlockPos pos, long calendarTicks, int daysInMonth, CallbackInfoReturnable<Float> cir)
     {
         Level levelS = (Level) level;
@@ -32,18 +32,6 @@ public class OverworldClimateModelMixin {
         int topMostBlock = levelS.getHeight(Heightmap.Types.WORLD_SURFACE,(int)pos.getX(),(int)pos.getZ());
         Vec3 center = new Vec3(pos.getX(),topMostBlock,pos.getZ());
         float rainLevel = weatherHandler.getPrecipitation(center);
-        cir.setReturnValue(rainLevel  * 1000f);
-    }
-
-    @Inject(method = "getInstantGroundwater", at = @At("HEAD"),cancellable = true)
-    private void getInstantGroundWaterO(LevelReader level, BlockPos pos, long calendarTicks, int daysInMonth, CallbackInfoReturnable<Float> cir)
-    {
-        Level levelS = (Level) level;
-        WeatherHandler weatherHandler = GameBusEvents.MANAGERS.get(levelS.dimension());
-        int topMostBlock = levelS.getHeight(Heightmap.Types.WORLD_SURFACE,(int)pos.getX(),(int)pos.getZ());
-        Vec3 center = new Vec3(pos.getX(),topMostBlock,pos.getZ());
-
-        float rainLevel = weatherHandler.getPrecipitation(center);
-        cir.setReturnValue(rainLevel  * 1000f);
+        cir.setReturnValue(rainLevel  * 500f);
     }
 }

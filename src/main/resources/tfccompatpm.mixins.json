@@ -5,6 +5,7 @@
   "priority": 2000000000,
   "mixins": [
     "OverworldClimateModelMixin",
+    "PmweatherMetarMixin",
     "PmweatherThermoMixin"
   ],
   "injectors": {

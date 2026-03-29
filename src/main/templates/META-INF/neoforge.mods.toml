@@ -88,16 +88,18 @@ config="${mod_id}.mixins.json"
     ordering="NONE"
     side="BOTH"
 
-[[dependencies.${mod_id}]]
-modId="tfc"
-type="required"
-# This version range declares a minimum of the current minecraft version up to but not including the next major version
-versionRange=" "
-ordering="AFTER"
-side="BOTH"
+
 
 [[dependencies.${mod_id}]]
 modId="pmweather"
+type="required"
+# This version range declares a minimum of the current minecraft version up to but not including the next major version
+versionRange=" "
+ordering="BEFORE"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="tfc"
 type="required"
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
 versionRange=" "
