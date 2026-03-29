@@ -31,15 +31,15 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import static dev.protomanly.pmweather.weather.ThermodynamicEngine.*;
-
+// useful method Climate.get(level).getInstantTemperature(level,new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));
 @Mixin(ThermodynamicEngine.class)
 public class PmweatherThermoMixin {
-    @Inject(method = "samplePoint(Ldev/protomanly/pmweather/weather/WeatherHandler;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/level/Level;Ldev/protomanly/pmweather/block/entity/RadarBlockEntity;ILjava/lang/Integer;ZZ)Ldev/protomanly/pmweather/weather/ThermodynamicEngine$AtmosphericDataPoint;", at = @At("HEAD"),cancellable = true)
+    @Inject(method = "samplePoint(Ldev/protomanly/pmweather/weather/WeatherHandler;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/level/Level;Ldev/protomanly/pmweather/block/entity/RadarBlockEntity;ILjava/lang/Integer;ZZ)Ldev/protomanly/pmweather/weather/ThermodynamicEngine$AtmosphericDataPoint;", at = @At("HEAD"), cancellable = true)
     private static void samplePoint(WeatherHandler weatherHandler, Vec3 pos, Level level, RadarBlockEntity radarBlockEntity, int advance, Integer groundHeight, boolean doFireAffect, boolean stormsAffect, CallbackInfoReturnable<ThermodynamicEngine.AtmosphericDataPoint> cir) {
         BlockPos blockPos = new BlockPos((int) pos.x, (int) pos.y, (int) pos.z);
         ThermodynamicEngine.noise = WindEngine.simplexNoise;
         if (ThermodynamicEngine.noise == null) {
-            cir.setReturnValue( new AtmosphericDataPoint(30.0F, 30.0F, 1013.0F, 30.0F));
+            cir.setReturnValue(new AtmosphericDataPoint(30.0F, 30.0F, 1013.0F, 30.0F));
         } else {
             float time = (float) (level.getDayTime() + (long) advance);
             float biomeTemp = 0.0F;
@@ -79,7 +79,7 @@ public class PmweatherThermoMixin {
 
             biomeTemp -= 0.15F;
             if (groundHeight == null) {
-                groundHeight = level.getHeight(Heightmap.Types.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ());
+                groundHeight = level.getHeight(Types.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ());
             }
 
             int elevation = Math.max(level.getSeaLevel(), groundHeight);
@@ -122,11 +122,20 @@ public class PmweatherThermoMixin {
 
             cachedSfcTNoise = sfcTNoise;
             sfcTNoise *= 5.0F;
-            float sfcTemp= Climate.get(level).getInstantTemperature(level,new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));;
+            float sfcTemp;
+            if (biomeTemp <= 0.0F) {
+                sfcTemp = Mth.lerp(-biomeTemp, 0.0F, -20.0F + sfcTNoise);
+            } else {
+                sfcTemp = Mth.lerp((float) Math.pow((double) biomeTemp / 1.85, (double) 0.5F), 0.0F, 35.0F + sfcTNoise);
+            }
 
+            sfcTemp += humidity * 3.0F;
             float sfcTempTimeMod = (float) timeFactorHeightAffected * 5.0F * Math.max(1.0F - humidity, 0.05F);
             sfcTempTimeMod += 5.0F;
+            sfcTemp += sfcTempTimeMod;
             float tNoise = sfcTNoise / 5.0F;
+            sfcTemp += tNoise * 2.0F;
+            sfcTemp -= (float) elevationSeaLevel / 20.0F;
             if (ServerConfig.doSeasons) {
                 float seasonEffect = SeasonHandler.getSeasonEffectSine(level, 0.0F);
                 if (seasonEffect > 0.0F) {
@@ -136,6 +145,8 @@ public class PmweatherThermoMixin {
                 if (humidity > 0.75F) {
                     seasonEffect *= 1.0F - (humidity - 0.75F) * 4.0F;
                 }
+
+                sfcTemp += seasonEffect * 34.0F;
             }
 
             float fireIntensity = 0.0F;
@@ -171,7 +182,7 @@ public class PmweatherThermoMixin {
             }
 
             float dewP = Mth.clamp((float) Mth.lerp((double) 0.7F, (ThermodynamicEngine.noise.getValue(pos.z / (double) 2200.0F, (double) (time / 9000.0F) + pos.y / (double) 100.0F, pos.x / (double) 300.0F) + (double) 1.0F) / (double) 2.0F, (double) var88), 0.2F, 1.0F);
-            float sfcDew = Math.min(sfcTemp, 32.0F) - Math.clamp((1.0F - dewP) * (sfcTemp), 0.0F, 15.0F);
+            float sfcDew = Math.min(sfcTemp - sfcTempTimeMod, 32.0F) - Math.clamp((1.0F - dewP) * (sfcTemp - sfcTempTimeMod), 0.0F, 15.0F);
             if (sfcDew > 0.0F) {
                 sfcDew *= humidity * 0.9F + 0.1F;
             }
@@ -191,7 +202,8 @@ public class PmweatherThermoMixin {
                 if (seasonEffect < 0.0F && humidity > 0.75F) {
                     seasonEffect *= 1.0F - (humidity - 0.75F) * 4.0F;
                 }
-                
+
+                sfcDew += seasonEffect * 8.0F;
                 float humidEffect = SeasonHandler.getSeasonEffectSine(weatherHandler.getWorld(), 3.5F) + 1.0F;
                 if (humidity > 0.75F) {
                     humidEffect *= 1.0F - (humidity - 0.75F) * 4.0F;
@@ -212,8 +224,8 @@ public class PmweatherThermoMixin {
             lapseRate += lrNoise;
             lapseRate *= 0.4F + (1.0F - humidity);
             float dewRatio = Mth.lerp((tNoise + 1.0F) / 2.0F, Mth.lerp(humidity, 0.4F, 0.1F), Mth.lerp(humidity, 0.65F, 0.3F));
-            float var90 = sfcTemp;
-            float var93 = sfcDew;
+            float var90 = sfcTemp - lapseRate * (altitude / 1000.0F);
+            float var93 = sfcDew - lapseRate * (altitude / 1000.0F) * dewRatio;
             float noise;
             if (cached) {
                 noise = cachedNoise;
@@ -228,23 +240,25 @@ public class PmweatherThermoMixin {
             bumpStrength -= 4.0F * humidity;
             if (altitude > bumpH) {
                 float i = Math.clamp((altitude - bumpH) / 150.0F, 0.0F, 1.0F);
+                var90 += Mth.lerp(i, 0.0F, bumpStrength);
                 var93 -= Mth.lerp(i, 0.0F, bumpStrength);
             }
 
             float a = Math.clamp(altitude, 0.0F, 1000.0F);
-
-            var93 -= lapseRate * dewRatio * 0.25F;
+            var90 -= lapseRate * (a / 1000.0F) * 0.25F;
+            var93 -= lapseRate * (a / 1000.0F) * dewRatio * 0.25F;
             noise = FBM(pos.multiply((double) (1.0F / xzScale), (double) 0.0F, (double) (1.0F / xzScale)).add((double) 0.0F, (double) (time / timeScale), (double) 0.0F), 2, 2.0F, 0.5F, 1.0F);
             float inversionHeight = (float) elevationSeaLevel + Mth.lerp(Math.clamp(noise, 0.0F, 1.0F), 12000.0F, 16000.0F);
             if (altitude > inversionHeight) {
                 float dif = altitude - inversionHeight;
                 float i = Math.clamp(dif / 1500.0F, 0.0F, 1.0F);
-
+                var90 += Mth.lerp(i, 0.0F, lapseRate * (dif / 1000.0F));
                 var93 += Mth.lerp(i, 0.0F, lapseRate * (dif / 1000.0F) * dewRatio);
             }
 
             float offset = FBM(pos.multiply((double) (1.0F / xzScale), (double) (1.0F / yScale), (double) (1.0F / xzScale)).add((double) 0.0F, (double) (time / -timeScale), (double) 0.0F), 4, 2.0F, 0.5F, 1.0F);
             offset *= 1.5F;
+            var90 += offset;
             var93 -= offset * 1.5F;
             float p = getPressureAtHeight(aboveSeaLevel, var90, (float) elevationSeaLevel, sfcPressure);
             float dewMin = FBM(pos.multiply((double) (1.0F / xzScale), (double) (1.0F / yScale), (double) (1.0F / xzScale)).add((double) 0.0F, (double) (time / -timeScale), (double) 0.0F), 4, 2.0F, 0.5F, 1.0F);
@@ -257,7 +271,7 @@ public class PmweatherThermoMixin {
             }
 
             var93 = Math.min(var90, var93);
-            cir.setReturnValue( new AtmosphericDataPoint(var90, var93, p, calcVTemp(var90, var93, sfcPressure)));
+            cir.setReturnValue(new AtmosphericDataPoint(var90, var93, p, calcVTemp(var90, var93, sfcPressure)));
         }
     }
 }

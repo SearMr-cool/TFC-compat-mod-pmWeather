@@ -126,6 +126,7 @@ dependencies {
     implementation "maven.modrinth:protomanlys-weather:0.16.4-alpha"
     implementation "maven.modrinth:terrafirmacraft:4.0.19-beta"
     implementation "maven.modrinth:patchouli:1.21.1-92-neoforge"
+    implementation "maven.modrinth:world-preview-terrafirmacraft:2.0.1"
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
