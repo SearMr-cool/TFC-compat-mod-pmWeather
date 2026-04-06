@@ -5,8 +5,11 @@
   "priority": 2000000000,
   "mixins": [
     "OverworldClimateModelMixin",
+    "PmweatherFireBlockMixin",
     "PmweatherMetarMixin",
-    "PmweatherThermoMixin"
+    "PmweatherMoistureHandler",
+    "PmweatherThermoMixin",
+    "TFCFarmLandMixin"
   ],
   "injectors": {
     "defaultRequire": 1
