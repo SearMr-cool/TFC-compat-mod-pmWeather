@@ -30,6 +30,10 @@ repositories {
             includeGroup "maven.modrinth"
         }
     }
+    maven { url = "https://maven.bawnorton.com/releases" }
+
+    // Mirror
+    maven { url = "https://maven.enjarai.dev/mirrors" }
 }
 
 base {
@@ -123,10 +127,13 @@ configurations {
 }
 
 dependencies {
+
     implementation "maven.modrinth:protomanlys-weather:0.16.4-alpha"
     implementation "maven.modrinth:terrafirmacraft:4.0.19-beta"
     implementation "maven.modrinth:patchouli:1.21.1-92-neoforge"
     implementation "maven.modrinth:world-preview-terrafirmacraft:2.0.1"
+    compileOnly(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-common:0.3.7-beta.3"))
+    implementation(jarJar("com.github.bawnorton.mixinsquared:mixinsquared-neoforge:0.3.7-beta.3"))
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"

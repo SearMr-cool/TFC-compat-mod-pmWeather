@@ -122,8 +122,6 @@ public class PmweatherThermoMixin {
             float sfcTemp;
 
             sfcTemp = Climate.get(level).getInstantTemperature(level,new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));
-            float sfcTempTimeMod = (float) timeFactorHeightAffected * 5.0F * Math.max(1.0F - humidity, 0.05F);
-            sfcTempTimeMod += 5.0F;
             float tNoise = sfcTNoise / 5.0F;
 
             float fireIntensity = 0.0F;

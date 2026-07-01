@@ -2,9 +2,10 @@
   "required": true,
   "package": "net.searmr.tfccompatpm.mixin",
   "compatibilityLevel": "JAVA_21",
-  "priority": 2000000000,
+  "priority": -5,
   "mixins": [
     "OverworldClimateModelMixin",
+    "PmwBaseFireOverrideMixin",
     "PmweatherFireBlockMixin",
     "PmweatherMetarMixin",
     "PmweatherMoistureHandler",
